@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { TrendingUp, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Dashboard" },
@@ -20,10 +21,10 @@ export function TopNav() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <TrendingUp className="h-4 w-4 text-primary-foreground" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg ">
+            <img className="h-8 w-8 text-primary-foreground" src="../logo.jpeg"/>
           </div>
-          <span className="text-lg font-semibold">Portfolio</span>
+          <span className="text-lg font-semibold">Llama.dev - Portfolio</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -42,18 +43,24 @@ export function TopNav() {
           ))}
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 hover:bg-muted rounded-md transition-colors"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 hover:bg-muted rounded-md transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
