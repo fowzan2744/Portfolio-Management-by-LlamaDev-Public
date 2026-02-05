@@ -1,22 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { newsItems, holdings } from "@/data/mockData";
+import { holdings } from "@/data/mockData";
 import { cn } from "@/lib/utils";
-import { ExternalLink, Newspaper } from "lucide-react";
+import { ExternalLink, Newspaper, Loader2, AlertCircle } from "lucide-react";
+import { api, type NewsItem } from "@/lib/api";
 
 type FilterType = "all" | "portfolio";
 
 export default function News() {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const portfolioSymbols = holdings.map((h) => h.symbol);
 
-  const filteredNews = filter === "all"
-    ? newsItems
-    : newsItems.filter((news) =>
-        news.relatedSymbols.some((symbol) => portfolioSymbols.includes(symbol))
-      );
+  // Fetch news when filter changes
+  useEffect(() => {
+    const fetchNews = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = filter === "portfolio" 
+          ? await api.getPortfolioNews()
+          : await api.getMarketNews();
+        setNews(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load news");
+        setNews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [filter]);
+
+  const filteredNews = news;
 
   return (
     <AppLayout>
@@ -63,9 +84,29 @@ export default function News() {
             </div>
           </CardHeader>
           <CardContent className="p-0 mt-4">
-            {filteredNews.length === 0 ? (
+            {loading ? (
+              <div className="p-12 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Loading news...</p>
+              </div>
+            ) : error ? (
+              <div className="p-12 flex flex-col items-center justify-center gap-3">
+                <AlertCircle className="h-8 w-8 text-destructive" />
+                <p className="text-sm text-destructive font-medium">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : filteredNews.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-muted-foreground">No news found for your portfolio holdings.</p>
+                <p className="text-muted-foreground">
+                  {filter === "portfolio" 
+                    ? "No news found for your portfolio holdings." 
+                    : "No news available at the moment."}
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-border">

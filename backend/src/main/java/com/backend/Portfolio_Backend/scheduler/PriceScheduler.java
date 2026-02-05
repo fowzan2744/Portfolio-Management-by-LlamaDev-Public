@@ -22,10 +22,11 @@ public class PriceScheduler {
     }
 
     // ✅ RUN ONCE AFTER APP IS FULLY READY
-    @EventListener(ApplicationReadyEvent.class)
+    // TEMPORARILY DISABLED - causing startup crashes
+    // @EventListener(ApplicationReadyEvent.class)
     public void runOnStartup() {
-        System.out.println("🚀 Initial price fetch on application startup");
-        refreshPrices();
+        System.out.println("🚀 Initial price fetch on application startup (DISABLED)");
+        // refreshPrices();
     }
 
     // 🔁 RUN EVERY 15 MINUTES
