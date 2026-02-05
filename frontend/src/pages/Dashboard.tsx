@@ -289,14 +289,14 @@ export default function Dashboard() {
                         fill="url(#portfolioGrowthFill)"
                         isAnimationActive={true}
                       />
-                      <Line
+                      {/* <Line
                         type="monotone"
                         dataKey="value"
                         stroke="hsl(var(--chart-line))"
                         strokeWidth={2}
                         dot={false}
                         activeDot={{ r: 4, fill: "hsl(var(--chart-line))" }}
-                      />
+                      /> */}
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
