@@ -134,14 +134,14 @@ const ChartTooltipContent = React.forwardRef<
           : itemConfig?.label;
 
       if (labelFormatter) {
-        return <div className={cn("font-medium", labelClassName)}>{labelFormatter(value, payload)}</div>;
+        return <div className={cn("font-medium dark:text-foreground", labelClassName)}>{labelFormatter(value, payload)}</div>;
       }
 
       if (!value) {
         return null;
       }
 
-      return <div className={cn("font-medium", labelClassName)}>{value}</div>;
+      return <div className={cn("font-medium dark:text-foreground", labelClassName)}>{value}</div>;
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
 
     if (!active || !payload?.length) {
@@ -205,10 +205,10 @@ const ChartTooltipContent = React.forwardRef<
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">{itemConfig?.label || item.name}</span>
+                        <span className="text-muted-foreground dark:text-foreground">{itemConfig?.label || item.name}</span>
                       </div>
                       {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
+                        <span className="font-mono font-medium tabular-nums text-foreground dark:text-foreground">
                           {item.value.toLocaleString()}
                         </span>
                       )}

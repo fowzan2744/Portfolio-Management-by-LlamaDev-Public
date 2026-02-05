@@ -5,7 +5,7 @@ import { api, PortfolioSummary, PortfolioGrowth, Allocation, Holding } from "@/l
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  LineChart,
+  ComposedChart,
   Line,
   XAxis,
   YAxis,
@@ -14,6 +14,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Area,
 } from "recharts";
 
 const CHART_COLORS = [
@@ -27,7 +28,7 @@ const CHART_COLORS = [
 type TimeRange = "1D" | "1W";
 
 export default function Dashboard() {
-  const [timeRange, setTimeRange] = useState<TimeRange>("1D");
+  const [timeRange, setTimeRange] = useState<TimeRange>("1W");
   const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null);
   const [chartData, setChartData] = useState<PortfolioGrowth[]>([]);
   const [allocationData, setAllocationData] = useState<Allocation[]>([]);
@@ -146,7 +147,7 @@ export default function Dashboard() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="card-hover">
             <CardContent className="pt-6">
               <div className="space-y-1">
@@ -190,7 +191,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-{/*           
+     
           <Card className="card-hover">
             <CardContent className="pt-6">
               <div className="space-y-1">
@@ -216,7 +217,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </CardContent>
-          </Card> */}
+          </Card> 
         </div>
 
         {/* Charts Grid - Two Column Layout */}
@@ -252,7 +253,13 @@ export default function Dashboard() {
               ) : (
                 <div className="chart-container">
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
+                    <ComposedChart data={chartData}>
+                      <defs>
+                        <linearGradient id="portfolioGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(var(--success))" stopOpacity={0.5} />
+                          <stop offset="80%" stopColor="hsl(var(--success))" stopOpacity={0.08} />
+                        </linearGradient>
+                      </defs>
                       <XAxis 
                         dataKey="time" 
                         axisLine={false}
@@ -275,6 +282,13 @@ export default function Dashboard() {
                         }}
                         formatter={(value: number) => [`$${value.toLocaleString()}`, "Value"]}
                       />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="none"
+                        fill="url(#portfolioGrowthFill)"
+                        isAnimationActive={true}
+                      />
                       <Line
                         type="monotone"
                         dataKey="value"
@@ -283,7 +297,7 @@ export default function Dashboard() {
                         dot={false}
                         activeDot={{ r: 4, fill: "hsl(var(--chart-line))" }}
                       />
-                    </LineChart>
+                    </ComposedChart>
                   </ResponsiveContainer>
                 </div>
               )}

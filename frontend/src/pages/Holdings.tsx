@@ -270,7 +270,7 @@ export default function Holdings() {
                       <CardTitle className="text-lg">{holding.symbol}</CardTitle>
                       <p className="text-sm text-muted-foreground">{holding.name}</p>
                     </div>
-                    {/* <div className={cn(
+                    <div className={cn(
                       "flex items-center gap-1 text-sm font-medium",
                       isPositive ? "text-success" : "text-destructive"
                     )}>
@@ -280,7 +280,7 @@ export default function Holdings() {
                         <TrendingDown className="h-4 w-4" />
                       )}
                       {isPositive ? "+" : ""}{holding.dailyChangePercent.toFixed(2)}%
-                    </div> */}
+                    </div> 
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -318,10 +318,10 @@ export default function Holdings() {
                   </div>
 
                   {/* Sell/Remove Button */}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2 border-destructive/60 text-black hover:text-destructive hover:bg-destructive/10 dark:bg-destructive/90 dark:text-white dark:hover:bg-destructive/20"
                     onClick={() => openSellDialog(holding)}
                   >
                     <Minus className="h-4 w-4" />
