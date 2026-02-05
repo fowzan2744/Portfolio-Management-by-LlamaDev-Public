@@ -388,8 +388,8 @@ Automated price updates:
 ### Integrity Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/portfolio/integrity/verify` | Verify audit chain integrity |
-| `GET` | `/api/portfolio/integrity/status` | Check integrity status |
+| `GET` | `/api/portfolio/integrity` | Verify audit chain integrity Status |
+
 
 ### Example Request/Response
 **GET /api/portfolio/holdings**
