@@ -11,6 +11,7 @@ import com.backend.Portfolio_Backend.service.PriceService;
 import com.backend.Portfolio_Backend.service.TickerNameService;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -136,9 +137,12 @@ public class PortfolioController {
         );
     }
 
-    // 🔹 Get portfolio growth chart data
+
     @GetMapping("/growth")
-    public List<PortfolioGrowthDTO> getPortfolioGrowth(@RequestParam(defaultValue = "1D") String range) {
+    public List<PortfolioGrowthDTO> getPortfolioGrowth(
+            @RequestParam(defaultValue = "1D") String range
+    ) {
+
         List<PortfolioAsset> assets = portfolioService.getAssets();
         if (assets.isEmpty()) {
             return new ArrayList<>();
@@ -146,114 +150,253 @@ public class PortfolioController {
 
         List<PortfolioGrowthDTO> growthData = new ArrayList<>();
 
+        // ======================================================
+        // ✅ 1D RANGE (Intraday) - Use actual timestamps from DB
+        // ======================================================
         if ("1D".equals(range)) {
-            // Get intraday data for today
+
             LocalDateTime todayStart = LocalDate.now().atStartOfDay();
             LocalDateTime now = LocalDateTime.now();
-            
+
+            // Step 1: Collect all intraday prices for all assets
             Map<String, List<IntradayPrice>> intradayData = new HashMap<>();
+            Set<LocalDateTime> allTimestamps = new TreeSet<>();
+
             for (PortfolioAsset asset : assets) {
-                List<IntradayPrice> prices = intradayPriceRepository
-                        .findByTickerAndTimestampBetween(asset.getTicker(), todayStart, now);
+                List<IntradayPrice> prices =
+                        intradayPriceRepository.findByTickerAndTimestampBetween(
+                                asset.getTicker(),
+                                todayStart,
+                                now
+                        );
+
                 if (!prices.isEmpty()) {
                     intradayData.put(asset.getTicker(), prices);
+                    // Collect all unique timestamps
+                    prices.forEach(p -> allTimestamps.add(p.getTimestamp()));
                 }
             }
 
-            // Group by time intervals (every 30 minutes)
-            Map<String, Double> timeValueMap = new TreeMap<>();
-            
-            for (int hour = 9; hour <= 16; hour++) {
-                for (int minute = 0; minute < 60; minute += 30) {
-                    if (hour == 9 && minute < 30) continue; // Market opens at 9:30
-                    if (hour == 16 && minute > 0) break; // Market closes at 16:00
-                    
-                    LocalDateTime time = LocalDate.now().atTime(hour, minute);
-                    if (time.isAfter(now)) break;
-                    
-                    String timeKey = String.format("%d:%02d", hour, minute);
+            // Step 2: If we have actual data, use it. Otherwise, create fallback intervals
+            if (!allTimestamps.isEmpty()) {
+                // Group timestamps into 15-minute buckets to avoid too many data points
+                Map<LocalDateTime, List<LocalDateTime>> timeBuckets = new TreeMap<>();
+
+                for (LocalDateTime timestamp : allTimestamps) {
+                    // Round down to nearest 15 minutes
+                    int minute = timestamp.getMinute();
+                    int roundedMinute = (minute / 15) * 15;
+                    LocalDateTime bucket = timestamp.withMinute(roundedMinute).withSecond(0).withNano(0);
+                    timeBuckets.computeIfAbsent(bucket, k -> new ArrayList<>()).add(timestamp);
+                }
+
+                // Step 3: For each time bucket, calculate portfolio value
+                for (Map.Entry<LocalDateTime, List<LocalDateTime>> bucketEntry : timeBuckets.entrySet()) {
+                    LocalDateTime bucketTime = bucketEntry.getKey();
+                    // Use the latest timestamp in this bucket
+                    LocalDateTime actualTime = bucketEntry.getValue().stream()
+                            .max(Comparator.naturalOrder())
+                            .orElse(bucketTime);
+
+                    String timeKey = String.format("%d:%02d", actualTime.getHour(), actualTime.getMinute());
                     double portfolioValue = 0;
-                    
+
                     for (PortfolioAsset asset : assets) {
                         List<IntradayPrice> prices = intradayData.get(asset.getTicker());
+
                         if (prices != null && !prices.isEmpty()) {
-                            // Find closest price before or at this time
-                            Optional<IntradayPrice> closestPrice = prices.stream()
-                                    .filter(p -> !p.getTimestamp().isAfter(time))
+                            // Find the closest price at or before this bucket time
+                            Optional<IntradayPrice> closest = prices.stream()
+                                    .filter(p -> !p.getTimestamp().isAfter(actualTime))
                                     .max(Comparator.comparing(IntradayPrice::getTimestamp));
-                            
-                            if (closestPrice.isPresent()) {
-                                portfolioValue += asset.getQuantity() * closestPrice.get().getClose();
+
+                            if (closest.isPresent()) {
+                                portfolioValue += asset.getQuantity() * closest.get().getClose();
                             } else {
-                                // Use latest available price or avgBuyPrice
+                                // Fallback: use latest available price
                                 Double latestPrice = priceService.getLatestPrice(asset.getTicker());
-                                portfolioValue += asset.getQuantity() * 
+                                portfolioValue += asset.getQuantity() *
                                         (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
                             }
                         } else {
-                            // No intraday data, use latest price
+                            // No intraday data for this ticker, use latest price
                             Double latestPrice = priceService.getLatestPrice(asset.getTicker());
-                            portfolioValue += asset.getQuantity() * 
+                            portfolioValue += asset.getQuantity() *
                                     (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
                         }
                     }
-                    
-                    timeValueMap.put(timeKey, portfolioValue);
+
+                    growthData.add(new PortfolioGrowthDTO(timeKey, portfolioValue));
+                }
+            } else {
+                // No intraday data for today - try yesterday as fallback
+                LocalDate yesterday = LocalDate.now().minusDays(1);
+                LocalDateTime yesterdayStart = yesterday.atStartOfDay();
+                LocalDateTime yesterdayEnd = yesterday.plusDays(1).atStartOfDay();
+
+                Map<String, List<IntradayPrice>> yesterdayData = new HashMap<>();
+                Set<LocalDateTime> yesterdayTimestamps = new TreeSet<>();
+
+                for (PortfolioAsset asset : assets) {
+                    List<IntradayPrice> prices =
+                            intradayPriceRepository.findByTickerAndTimestampBetween(
+                                    asset.getTicker(),
+                                    yesterdayStart,
+                                    yesterdayEnd
+                            );
+
+                    if (!prices.isEmpty()) {
+                        yesterdayData.put(asset.getTicker(), prices);
+                        prices.forEach(p -> yesterdayTimestamps.add(p.getTimestamp()));
+                    }
+                }
+
+                if (!yesterdayTimestamps.isEmpty()) {
+                    // Use yesterday's data grouped into 15-minute buckets
+                    Map<LocalDateTime, List<LocalDateTime>> timeBuckets = new TreeMap<>();
+
+                    for (LocalDateTime timestamp : yesterdayTimestamps) {
+                        int minute = timestamp.getMinute();
+                        int roundedMinute = (minute / 15) * 15;
+                        LocalDateTime bucket = timestamp.withMinute(roundedMinute).withSecond(0).withNano(0);
+                        timeBuckets.computeIfAbsent(bucket, k -> new ArrayList<>()).add(timestamp);
+                    }
+
+                    for (Map.Entry<LocalDateTime, List<LocalDateTime>> bucketEntry : timeBuckets.entrySet()) {
+                        LocalDateTime actualTime = bucketEntry.getValue().stream()
+                                .max(Comparator.naturalOrder())
+                                .orElse(bucketEntry.getKey());
+
+                        String timeKey = String.format("%d:%02d", actualTime.getHour(), actualTime.getMinute());
+                        double portfolioValue = 0;
+
+                        for (PortfolioAsset asset : assets) {
+                            List<IntradayPrice> prices = yesterdayData.get(asset.getTicker());
+
+                            if (prices != null && !prices.isEmpty()) {
+                                Optional<IntradayPrice> closest = prices.stream()
+                                        .filter(p -> !p.getTimestamp().isAfter(actualTime))
+                                        .max(Comparator.comparing(IntradayPrice::getTimestamp));
+
+                                if (closest.isPresent()) {
+                                    portfolioValue += asset.getQuantity() * closest.get().getClose();
+                                } else {
+                                    Double latestPrice = priceService.getLatestPrice(asset.getTicker());
+                                    portfolioValue += asset.getQuantity() *
+                                            (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
+                                }
+                            } else {
+                                Double latestPrice = priceService.getLatestPrice(asset.getTicker());
+                                portfolioValue += asset.getQuantity() *
+                                        (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
+                            }
+                        }
+
+                        growthData.add(new PortfolioGrowthDTO(timeKey, portfolioValue));
+                    }
+                } else {
+                    // No intraday data at all - show current portfolio value as single point
+                    double portfolioValue = 0;
+                    for (PortfolioAsset asset : assets) {
+                        Double price = priceService.getLatestPrice(asset.getTicker());
+                        if (price == null) price = asset.getAvgBuyPrice();
+                        portfolioValue += asset.getQuantity() * price;
+                    }
+
+                    LocalDateTime currentTime = LocalDateTime.now();
+                    String timeKey = String.format("%d:%02d", currentTime.getHour(), currentTime.getMinute());
+                    growthData.add(new PortfolioGrowthDTO(timeKey, portfolioValue));
                 }
             }
-            
-            // Convert to DTOs
-            growthData = timeValueMap.entrySet().stream()
-                    .map(e -> new PortfolioGrowthDTO(e.getKey(), e.getValue()))
-                    .collect(Collectors.toList());
-                    
-        } else if ("1W".equals(range)) {
-            // Get daily data for last 5 business days
+        }
+
+        // ======================================================
+        // ✅ 1W RANGE (Last 5 Trading Days)
+        // ======================================================
+        else if ("1W".equals(range)) {
+
             LocalDate endDate = LocalDate.now();
-            LocalDate startDate = endDate.minusDays(6);
-            
+            LocalDate startDate = endDate.minusDays(10);
+
             Map<String, List<DailyPrice>> dailyData = new HashMap<>();
+
             for (PortfolioAsset asset : assets) {
-                List<DailyPrice> prices = dailyPriceRepository
-                        .findByTickerAndPriceDateBetween(asset.getTicker(), startDate, endDate);
+                List<DailyPrice> prices =
+                        dailyPriceRepository.findByTickerAndPriceDateBetween(
+                                asset.getTicker(),
+                                startDate,
+                                endDate
+                        );
+
                 if (!prices.isEmpty()) {
                     dailyData.put(asset.getTicker(), prices);
                 }
             }
 
-            // Group by day
+            // Collect last 5 trading days
+            List<LocalDate> tradingDays = new ArrayList<>();
+            LocalDate date = endDate;
+
+            while (tradingDays.size() < 5) {
+
+                if (!(date.getDayOfWeek() == DayOfWeek.SATURDAY ||
+                        date.getDayOfWeek() == DayOfWeek.SUNDAY)) {
+
+                    tradingDays.add(date);
+                }
+
+                date = date.minusDays(1);
+            }
+
+            Collections.reverse(tradingDays);
+
             Map<String, Double> dayValueMap = new LinkedHashMap<>();
-            String[] dayNames = {"Mon", "Tue", "Wed", "Thu", "Fri"};
-            
-            for (int i = 0; i < 5; i++) {
-                LocalDate date = endDate.minusDays(4 - i);
-                String dayName = dayNames[i];
+
+            for (LocalDate day : tradingDays) {
+
+                String label =
+                        day.getDayOfWeek().toString().substring(0, 3);
+
                 double portfolioValue = 0;
-                
+
                 for (PortfolioAsset asset : assets) {
-                    List<DailyPrice> prices = dailyData.get(asset.getTicker());
+
+                    List<DailyPrice> prices =
+                            dailyData.get(asset.getTicker());
+
                     if (prices != null && !prices.isEmpty()) {
-                        Optional<DailyPrice> dayPrice = prices.stream()
-                                .filter(p -> !p.getPriceDate().isAfter(date))
-                                .max(Comparator.comparing(DailyPrice::getPriceDate));
-                        
-                        if (dayPrice.isPresent()) {
-                            portfolioValue += asset.getQuantity() * dayPrice.get().getClose();
+
+                        Optional<DailyPrice> match =
+                                prices.stream()
+                                        .filter(p -> p.getPriceDate().equals(day))
+                                        .findFirst();
+
+                        if (match.isPresent()) {
+                            portfolioValue += asset.getQuantity() * match.get().getClose();
                         } else {
-                            Double latestPrice = priceService.getLatestPrice(asset.getTicker());
-                            portfolioValue += asset.getQuantity() * 
-                                    (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
+                            Double latestPrice =
+                                    priceService.getLatestPrice(asset.getTicker());
+
+                            portfolioValue += asset.getQuantity() *
+                                    (latestPrice != null
+                                            ? latestPrice
+                                            : asset.getAvgBuyPrice());
                         }
+
                     } else {
-                        Double latestPrice = priceService.getLatestPrice(asset.getTicker());
-                        portfolioValue += asset.getQuantity() * 
-                                (latestPrice != null ? latestPrice : asset.getAvgBuyPrice());
+                        Double latestPrice =
+                                priceService.getLatestPrice(asset.getTicker());
+
+                        portfolioValue += asset.getQuantity() *
+                                (latestPrice != null
+                                        ? latestPrice
+                                        : asset.getAvgBuyPrice());
                     }
                 }
-                
-                dayValueMap.put(dayName, portfolioValue);
+
+                dayValueMap.put(label, portfolioValue);
             }
-            
+
             growthData = dayValueMap.entrySet().stream()
                     .map(e -> new PortfolioGrowthDTO(e.getKey(), e.getValue()))
                     .collect(Collectors.toList());
