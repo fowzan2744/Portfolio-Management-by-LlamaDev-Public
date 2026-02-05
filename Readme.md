@@ -3,7 +3,284 @@
 A comprehensive portfolio management application built with **Spring Boot**, featuring real-time price tracking, portfolio analytics, and data integrity verification.
 
 ---
+# Portfolio Management - Frontend
 
+A modern, responsive React-based frontend for portfolio management and analytics, built with **Vite**, **TypeScript**, and **Shadcn UI**.
+
+## 📋 Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Available Scripts](#available-scripts)
+- [Configuration](#configuration)
+- [Components](#components)
+- [Pages](#pages)
+- [API Integration](#api-integration)
+- [Styling](#styling)
+- [Browser Support](#browser-support)
+
+## ✨ Features
+
+- **Dashboard**: Real-time portfolio overview with growth charts and asset allocation
+- **Analytics**: AI-powered insights with allocation visualization
+- **Holdings**: Detailed view of individual holdings and positions
+- **Reports**: Comprehensive portfolio reports and performance metrics
+- **News**: Market news and updates
+- **Responsive Design**: Fully optimized for desktop, tablet, and mobile
+- **Dark/Light Mode**: Built-in theme support
+- **Real-time Updates**: WebSocket integration for live data
+
+## 🛠️ Tech Stack
+
+- **Framework**: React 18+
+- **Build Tool**: Vite
+- **Language**: TypeScript
+- **UI Library**: Shadcn UI (Radix UI + Tailwind CSS)
+- **Styling**: Tailwind CSS with custom configurations
+- **Charts**: Recharts for data visualization
+- **Forms**: React Hook Form with Zod validation
+- **HTTP Client**: Custom API wrapper
+- **Testing**: Vitest
+- **Linting**: ESLint
+- **Package Manager**: Bun
+
+## 📁 Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── AppLayout.tsx       # Main app layout wrapper
+│   │   │   └── TopNav.tsx          # Navigation bar
+│   │   ├── ui/                     # Shadcn UI components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── chart.tsx
+│   │   │   └── [other UI components]
+│   │   └── NavLink.tsx             # Navigation link component
+│   ├── pages/
+│   │   ├── Dashboard.tsx           # Portfolio dashboard
+│   │   ├── Analytics.tsx           # Analytics & insights
+│   │   ├── Holdings.tsx            # Holdings view
+│   │   ├── News.tsx                # News feed
+│   │   ├── Reports.tsx             # Reports page
+│   │   └── NotFound.tsx            # 404 page
+│   ├── hooks/
+│   │   ├── use-mobile.tsx          # Mobile detection hook
+│   │   └── use-toast.ts            # Toast notifications hook
+│   ├── lib/
+│   │   ├── api.ts                  # API client & types
+│   │   └── utils.ts                # Utility functions
+│   ├── data/
+│   │   └── mockData.ts             # Mock data for development
+│   ├── test/
+│   │   ├── setup.ts                # Test configuration
+│   │   └── example.test.ts         # Example tests
+│   ├── App.tsx                     # Main app component
+│   ├── App.css                     # Global styles
+│   ├── main.tsx                    # Entry point
+│   ├── vite-env.d.ts               # Vite environment types
+│   └── index.css                   # Global CSS
+├── public/
+│   └── robots.txt
+├── components.json                 # Shadcn components config
+├── package.json                    # Dependencies & scripts
+├── vite.config.ts                  # Vite configuration
+├── vitest.config.ts                # Vitest configuration
+├── tsconfig.json                   # TypeScript config
+├── tailwind.config.ts              # Tailwind CSS config
+├── postcss.config.js               # PostCSS config
+├── eslint.config.js                # ESLint config
+└── index.html                      # HTML entry point
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 16+ or compatible runtime
+- Bun (recommended) or npm
+- Backend API running on `http://localhost:8080`
+
+### Installation
+
+1. **Clone the repository** (if not already done):
+```bash
+git clone <repository-url>
+cd frontend
+```
+
+2. **Install dependencies**:
+```bash
+bun install
+# or
+npm install
+```
+
+3. **Configure API endpoint**:
+Update the API base URL in [src/lib/api.ts](src/lib/api.ts) if needed (default: `http://localhost:8080`).
+
+4. **Start development server**:
+```bash
+bun run dev
+# or
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`
+
+## 📝 Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `bun run dev` | Start Vite dev server with HMR |
+| `bun run build` | Build for production |
+| `bun run build:dev` | Build for development |
+| `bun run preview` | Preview production build locally |
+| `bun run lint` | Run ESLint to check code quality |
+| `bun run test` | Run tests once with Vitest |
+| `bun run test:watch` | Run tests in watch mode |
+
+## ⚙️ Configuration
+
+### Vite Configuration
+- **Port**: 5173 (default)
+- **HMR Overlay**: Disabled to prevent disruptions
+- **Build Output**: `dist/`
+- **Path Alias**: `@` maps to `src/`
+
+### TypeScript Configuration
+- **Target**: ES2020
+- **Module**: ESNext
+- **JSX**: React-JSX
+- **Strict Mode**: Enabled for type safety
+- **Path Alias**: `@/*` → `./src/*`
+
+### Tailwind CSS
+Configured with custom theme colors and animations for portfolio management UI. See [tailwind.config.ts](tailwind.config.ts) for details.
+
+## 🎨 Components
+
+### Layout Components
+- **AppLayout**: Main layout wrapper with sidebar and top navigation
+- **TopNav**: Header navigation bar with branding and user menu
+
+### UI Components
+All components from Shadcn UI are available:
+- Buttons, Cards, Dialogs
+- Form inputs with validation
+- Data tables and pagination
+- Tabs, Tooltips, Dropdowns
+- Charts and graphs
+- Modals and alerts
+
+### Custom Hooks
+- `use-mobile`: Detect mobile device and screen size
+- `use-toast`: Toast notification system
+
+## 📄 Pages
+
+### Dashboard (`/`)
+Main portfolio overview showing:
+- Total value, invested amount, and gains
+- Portfolio growth chart (1D/1W views)
+- Asset allocation pie chart
+- Holdings summary table
+
+### Analytics (`/analytics`)
+Advanced analytics features:
+- Asset allocation visualization
+- AI-powered insights
+- Portfolio composition analysis
+
+### Holdings (`/holdings`)
+Detailed holdings management:
+- List of all holdings with prices
+- Performance metrics
+- Transaction history
+
+### News (`/news`)
+Market and portfolio-related news:
+- Latest financial news
+- Market updates
+- Custom news feed
+
+### Reports (`/reports`)
+Comprehensive portfolio reports:
+- Performance reports
+- Tax reports
+- Custom date range analysis
+
+## 🔗 API Integration
+
+The frontend communicates with the backend API through [src/lib/api.ts](src/lib/api.ts).
+
+### Key API Methods
+- `api.getPortfolioSummary()` - Fetch portfolio overview
+- `api.getPortfolioGrowth(timeRange)` - Get growth data
+- `api.getAllocation()` - Get asset allocation
+- `api.getHoldings()` - Get all holdings
+- `api.getNews()` - Fetch market news
+
+**Note**: Ensure the backend is running on `http://localhost:8080`
+
+## 🎨 Styling
+
+### Tailwind CSS
+- Custom color scheme with HSL variables
+- Responsive design utilities
+- Dark mode support
+- Custom animations
+
+### CSS Custom Properties
+Global CSS variables are defined for:
+- Colors (primary, secondary, muted, etc.)
+- Spacing
+- Border radius
+- Shadows
+
+See [src/index.css](src/index.css) for theme variables.
+
+## 📱 Browser Support
+
+- Chrome/Edge: Latest 2 versions
+- Firefox: Latest 2 versions
+- Safari: Latest 2 versions
+- Mobile browsers: iOS Safari 12+, Chrome Android 90+
+
+## 🔧 Troubleshooting
+
+### Build fails with "Cannot find module"
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules bun.lockb
+bun install
+```
+
+### Dev server won't start
+- Check if port 5173 is available
+- Verify Node.js version is 16+
+- Ensure all dependencies are installed
+
+### API connection errors
+- Verify backend is running on `http://localhost:8080`
+- Check network connectivity
+- Review API endpoint in `src/lib/api.ts`
+
+### TypeScript errors in IDE
+- Restart TypeScript server in VS Code (Cmd/Ctrl + Shift + P → "TypeScript: Restart TS Server")
+- Ensure `tsconfig.json` is properly configured
+
+## 📚 Additional Resources
+
+- [Vite Documentation](https://vitejs.dev/)
+- [React Documentation](https://react.dev/)
+- [Shadcn UI Documentation](https://ui.shadcn.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
 # Portfolio Management - Back End
 
 ## Table of Contents
@@ -609,284 +886,7 @@ http://localhost:8080/actuator
 
 ---
 
-# Portfolio Management - Frontend
 
-A modern, responsive React-based frontend for portfolio management and analytics, built with **Vite**, **TypeScript**, and **Shadcn UI**.
-
-## 📋 Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Available Scripts](#available-scripts)
-- [Configuration](#configuration)
-- [Components](#components)
-- [Pages](#pages)
-- [API Integration](#api-integration)
-- [Styling](#styling)
-- [Browser Support](#browser-support)
-
-## ✨ Features
-
-- **Dashboard**: Real-time portfolio overview with growth charts and asset allocation
-- **Analytics**: AI-powered insights with allocation visualization
-- **Holdings**: Detailed view of individual holdings and positions
-- **Reports**: Comprehensive portfolio reports and performance metrics
-- **News**: Market news and updates
-- **Responsive Design**: Fully optimized for desktop, tablet, and mobile
-- **Dark/Light Mode**: Built-in theme support
-- **Real-time Updates**: WebSocket integration for live data
-
-## 🛠️ Tech Stack
-
-- **Framework**: React 18+
-- **Build Tool**: Vite
-- **Language**: TypeScript
-- **UI Library**: Shadcn UI (Radix UI + Tailwind CSS)
-- **Styling**: Tailwind CSS with custom configurations
-- **Charts**: Recharts for data visualization
-- **Forms**: React Hook Form with Zod validation
-- **HTTP Client**: Custom API wrapper
-- **Testing**: Vitest
-- **Linting**: ESLint
-- **Package Manager**: Bun
-
-## 📁 Project Structure
-
-```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── AppLayout.tsx       # Main app layout wrapper
-│   │   │   └── TopNav.tsx          # Navigation bar
-│   │   ├── ui/                     # Shadcn UI components
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── chart.tsx
-│   │   │   └── [other UI components]
-│   │   └── NavLink.tsx             # Navigation link component
-│   ├── pages/
-│   │   ├── Dashboard.tsx           # Portfolio dashboard
-│   │   ├── Analytics.tsx           # Analytics & insights
-│   │   ├── Holdings.tsx            # Holdings view
-│   │   ├── News.tsx                # News feed
-│   │   ├── Reports.tsx             # Reports page
-│   │   └── NotFound.tsx            # 404 page
-│   ├── hooks/
-│   │   ├── use-mobile.tsx          # Mobile detection hook
-│   │   └── use-toast.ts            # Toast notifications hook
-│   ├── lib/
-│   │   ├── api.ts                  # API client & types
-│   │   └── utils.ts                # Utility functions
-│   ├── data/
-│   │   └── mockData.ts             # Mock data for development
-│   ├── test/
-│   │   ├── setup.ts                # Test configuration
-│   │   └── example.test.ts         # Example tests
-│   ├── App.tsx                     # Main app component
-│   ├── App.css                     # Global styles
-│   ├── main.tsx                    # Entry point
-│   ├── vite-env.d.ts               # Vite environment types
-│   └── index.css                   # Global CSS
-├── public/
-│   └── robots.txt
-├── components.json                 # Shadcn components config
-├── package.json                    # Dependencies & scripts
-├── vite.config.ts                  # Vite configuration
-├── vitest.config.ts                # Vitest configuration
-├── tsconfig.json                   # TypeScript config
-├── tailwind.config.ts              # Tailwind CSS config
-├── postcss.config.js               # PostCSS config
-├── eslint.config.js                # ESLint config
-└── index.html                      # HTML entry point
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 16+ or compatible runtime
-- Bun (recommended) or npm
-- Backend API running on `http://localhost:8080`
-
-### Installation
-
-1. **Clone the repository** (if not already done):
-```bash
-git clone <repository-url>
-cd frontend
-```
-
-2. **Install dependencies**:
-```bash
-bun install
-# or
-npm install
-```
-
-3. **Configure API endpoint**:
-Update the API base URL in [src/lib/api.ts](src/lib/api.ts) if needed (default: `http://localhost:8080`).
-
-4. **Start development server**:
-```bash
-bun run dev
-# or
-npm run dev
-```
-
-The app will be available at `http://localhost:5173`
-
-## 📝 Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `bun run dev` | Start Vite dev server with HMR |
-| `bun run build` | Build for production |
-| `bun run build:dev` | Build for development |
-| `bun run preview` | Preview production build locally |
-| `bun run lint` | Run ESLint to check code quality |
-| `bun run test` | Run tests once with Vitest |
-| `bun run test:watch` | Run tests in watch mode |
-
-## ⚙️ Configuration
-
-### Vite Configuration
-- **Port**: 5173 (default)
-- **HMR Overlay**: Disabled to prevent disruptions
-- **Build Output**: `dist/`
-- **Path Alias**: `@` maps to `src/`
-
-### TypeScript Configuration
-- **Target**: ES2020
-- **Module**: ESNext
-- **JSX**: React-JSX
-- **Strict Mode**: Enabled for type safety
-- **Path Alias**: `@/*` → `./src/*`
-
-### Tailwind CSS
-Configured with custom theme colors and animations for portfolio management UI. See [tailwind.config.ts](tailwind.config.ts) for details.
-
-## 🎨 Components
-
-### Layout Components
-- **AppLayout**: Main layout wrapper with sidebar and top navigation
-- **TopNav**: Header navigation bar with branding and user menu
-
-### UI Components
-All components from Shadcn UI are available:
-- Buttons, Cards, Dialogs
-- Form inputs with validation
-- Data tables and pagination
-- Tabs, Tooltips, Dropdowns
-- Charts and graphs
-- Modals and alerts
-
-### Custom Hooks
-- `use-mobile`: Detect mobile device and screen size
-- `use-toast`: Toast notification system
-
-## 📄 Pages
-
-### Dashboard (`/`)
-Main portfolio overview showing:
-- Total value, invested amount, and gains
-- Portfolio growth chart (1D/1W views)
-- Asset allocation pie chart
-- Holdings summary table
-
-### Analytics (`/analytics`)
-Advanced analytics features:
-- Asset allocation visualization
-- AI-powered insights
-- Portfolio composition analysis
-
-### Holdings (`/holdings`)
-Detailed holdings management:
-- List of all holdings with prices
-- Performance metrics
-- Transaction history
-
-### News (`/news`)
-Market and portfolio-related news:
-- Latest financial news
-- Market updates
-- Custom news feed
-
-### Reports (`/reports`)
-Comprehensive portfolio reports:
-- Performance reports
-- Tax reports
-- Custom date range analysis
-
-## 🔗 API Integration
-
-The frontend communicates with the backend API through [src/lib/api.ts](src/lib/api.ts).
-
-### Key API Methods
-- `api.getPortfolioSummary()` - Fetch portfolio overview
-- `api.getPortfolioGrowth(timeRange)` - Get growth data
-- `api.getAllocation()` - Get asset allocation
-- `api.getHoldings()` - Get all holdings
-- `api.getNews()` - Fetch market news
-
-**Note**: Ensure the backend is running on `http://localhost:8080`
-
-## 🎨 Styling
-
-### Tailwind CSS
-- Custom color scheme with HSL variables
-- Responsive design utilities
-- Dark mode support
-- Custom animations
-
-### CSS Custom Properties
-Global CSS variables are defined for:
-- Colors (primary, secondary, muted, etc.)
-- Spacing
-- Border radius
-- Shadows
-
-See [src/index.css](src/index.css) for theme variables.
-
-## 📱 Browser Support
-
-- Chrome/Edge: Latest 2 versions
-- Firefox: Latest 2 versions
-- Safari: Latest 2 versions
-- Mobile browsers: iOS Safari 12+, Chrome Android 90+
-
-## 🔧 Troubleshooting
-
-### Build fails with "Cannot find module"
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules bun.lockb
-bun install
-```
-
-### Dev server won't start
-- Check if port 5173 is available
-- Verify Node.js version is 16+
-- Ensure all dependencies are installed
-
-### API connection errors
-- Verify backend is running on `http://localhost:8080`
-- Check network connectivity
-- Review API endpoint in `src/lib/api.ts`
-
-### TypeScript errors in IDE
-- Restart TypeScript server in VS Code (Cmd/Ctrl + Shift + P → "TypeScript: Restart TS Server")
-- Ensure `tsconfig.json` is properly configured
-
-## 📚 Additional Resources
-
-- [Vite Documentation](https://vitejs.dev/)
-- [React Documentation](https://react.dev/)
-- [Shadcn UI Documentation](https://ui.shadcn.com/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/)
-- [TypeScript Documentation](https://www.typescriptlang.org/)
 
 ## 📄 License
 
